@@ -25,6 +25,9 @@ class AdminAuthBackend(AuthenticationBackend):
         from sqlalchemy.ext.asyncio import AsyncSession
 
         try:
+            # Single-admin enforcement: only the configured admin email can log in.
+            if not username or str(username).lower() != settings.admin_email.lower():
+                return False
             async with async_session_factory() as db:
                 result = await db.execute(
                     select(User).where(

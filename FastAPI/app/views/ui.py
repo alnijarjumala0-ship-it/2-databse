@@ -1,6 +1,6 @@
-"""Web UI views and dashboard routes."""
+"""Web UI views - admin dashboard only (single-admin system)."""
 from fastapi import APIRouter, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
 
@@ -11,109 +11,65 @@ router = APIRouter(tags=["UI"])
 
 
 @router.get("/", response_class=HTMLResponse)
-async def dashboard(request: Request):
-    """Serve the main dashboard UI at root domain."""
-    return templates.TemplateResponse(request, "dashboard.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-        "version": "1.0.0",
-    })
-
-
-@router.get("/login", response_class=HTMLResponse)
-async def login_page(request: Request):
-    """Serve the login page."""
-    return templates.TemplateResponse(request, "login.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
-
-
-@router.get("/register", response_class=HTMLResponse)
-async def register_page(request: Request):
-    """Serve the registration page."""
-    return templates.TemplateResponse(request, "register.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
-
-
-@router.get("/profile", response_class=HTMLResponse)
-async def profile_page(request: Request):
-    """Serve the user profile page (auth handled client-side via JS)."""
-    return templates.TemplateResponse(request, "profile.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
-
-
-@router.get("/admin", response_class=HTMLResponse)
-async def admin_dashboard(request: Request):
-    """Serve the admin dashboard page (auth handled client-side via JS)."""
+async def admin_dashboard_root(request: Request):
+    """Serve the admin dashboard (with login overlay) at root domain."""
     return templates.TemplateResponse(request, "admin.html", {
         "request": request,
         "app_name": "FastAPI MVC",
     })
 
 
-@router.get("/admin/register", response_class=HTMLResponse)
-async def admin_register_page(request: Request):
-    """Serve the admin registration page."""
-    return templates.TemplateResponse(request, "admin_register.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
+# --- Everything else redirects to the single admin dashboard ---
+@router.get("/users", include_in_schema=False)
+async def users_removed():
+    return RedirectResponse(url="/", status_code=302)
 
 
-@router.get("/about", response_class=HTMLResponse)
-async def about_page(request: Request):
-    """Serve the about page."""
-    return templates.TemplateResponse(request, "about.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
+@router.get("/products", include_in_schema=False)
+async def products_removed():
+    return RedirectResponse(url="/", status_code=302)
 
 
-@router.get("/contact", response_class=HTMLResponse)
-async def contact_page(request: Request):
-    """Serve the contact page."""
-    return templates.TemplateResponse(request, "contact.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
+@router.get("/logs", include_in_schema=False)
+async def logs_removed():
+    return RedirectResponse(url="/", status_code=302)
 
 
-@router.get("/products", response_class=HTMLResponse)
-async def products_page(request: Request):
-    """Serve the products page."""
-    return templates.TemplateResponse(request, "products.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
+@router.get("/settings", include_in_schema=False)
+async def settings_removed():
+    return RedirectResponse(url="/", status_code=302)
 
 
-@router.get("/users", response_class=HTMLResponse)
-async def users_page(request: Request):
-    """Serve the users management page (auth handled client-side via JS)."""
-    return templates.TemplateResponse(request, "users.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
+@router.get("/login", include_in_schema=False)
+async def login_removed():
+    return RedirectResponse(url="/", status_code=302)
 
 
-@router.get("/logs", response_class=HTMLResponse)
-async def logs_page(request: Request):
-    """Serve the activity logs page (auth handled client-side via JS)."""
-    return templates.TemplateResponse(request, "logs.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
+@router.get("/register", include_in_schema=False)
+async def register_removed():
+    return RedirectResponse(url="/", status_code=302)
 
 
-@router.get("/settings", response_class=HTMLResponse)
-async def settings_page(request: Request):
-    """Serve the settings page (auth handled client-side via JS)."""
-    return templates.TemplateResponse(request, "settings.html", {
-        "request": request,
-        "app_name": "FastAPI MVC",
-    })
+@router.get("/profile", include_in_schema=False)
+async def profile_removed():
+    return RedirectResponse(url="/", status_code=302)
+
+
+@router.get("/about", include_in_schema=False)
+async def about_removed():
+    return RedirectResponse(url="/", status_code=302)
+
+
+@router.get("/contact", include_in_schema=False)
+async def contact_removed():
+    return RedirectResponse(url="/", status_code=302)
+
+
+@router.get("/dashboard", include_in_schema=False)
+async def dashboard_removed():
+    return RedirectResponse(url="/", status_code=302)
+
+
+@router.get("/admin/register", include_in_schema=False)
+async def admin_register_removed():
+    return RedirectResponse(url="/", status_code=302)

@@ -82,11 +82,8 @@
                 <div class="py-4 px-3 text-white">
                     <h5><i class="bi bi-speedometer2"></i> FastAPI</h5>
                 </div>
-                <a href="/" class="active"><i class="bi bi-house-door"></i> Dashboard</a>
-                <a href="/login"><i class="bi bi-box-arrow-in-right"></i> Login</a>
-                <a href="/register"><i class="bi bi-person-plus"></i> Register</a>
-                <a href="/profile"><i class="bi bi-person"></i> Profile</a>
-                <a href="/admin"><i class="bi bi-shield-lock"></i> Admin</a>
+                <a href="/" class="active"><i class="bi bi-shield-lock"></i> Admin Dashboard</a>
+                <a href="/admin"><i class="bi bi-database"></i> SQLAdmin</a>
                 <a href="/docs"><i class="bi bi-file-earmark-code"></i> API Docs</a>
             </nav>
             <main class="col-md-10 ms-sm-auto px-md-4 py-4" id="adminDashboard">
@@ -153,8 +150,6 @@
                         <div class="card h-100">
                             <div class="card-header"><i class="bi bi-speedometer2 me-1"></i> Quick Actions</div>
                             <div class="card-body">
-                                <a href="/users" class="btn btn-outline-primary d-block mb-2">Manage Users</a>
-                                <a href="/logs" class="btn btn-outline-success d-block mb-2">View Activity Logs</a>
                                 <a href="/admin" class="btn btn-outline-warning d-block mb-2">SQLAdmin Panel</a>
                             </div>
                         </div>
@@ -203,12 +198,6 @@
                     </div>
                     <button type="submit" class="btn btn-primary w-100 mb-3">Login to Admin</button>
                     <div id="adminLoginResult" class="mt-2"></div>
-                    <div class="text-center">
-                        <small>Not an admin? <a href="/login">User Login</a></small>
-                    </div>
-                    <div class="text-center mt-2">
-                        <small><a href="/admin/register" class="text-decoration-none">Register as Admin</a></small>
-                    </div>
                 </form>
             </div>
         </div>

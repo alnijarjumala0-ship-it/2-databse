@@ -129,10 +129,8 @@ async def lifespan(app: FastAPI):
                 print(f"[startup] Admin user ensured: {settings.admin_email}")
                 if len(existing) > 1:
                     for extra in existing[1:]:
-                        extra.is_admin = True
-                        extra.is_active = True
-                        if not verify_password(settings.admin_password, extra.hashed_password):
-                            extra.hashed_password = get_password_hash(settings.admin_password)
+                        extra.is_admin = False
+                        extra.is_active = False
                     await db.commit()
             else:
                 admin_user = User(
@@ -150,6 +148,21 @@ async def lifespan(app: FastAPI):
                 except IntegrityError:
                     await db.rollback()
                     print(f"[startup] Admin user already exists (race condition), skipping creation")
+
+            # Single-admin enforcement: demote/deactivate anyone else.
+            others_result = await db.execute(
+                select(User).where(User.email != settings.admin_email)
+            )
+            others = others_result.scalars().all()
+            changed = False
+            for other in others:
+                if other.is_admin or other.is_active:
+                    other.is_admin = False
+                    other.is_active = False
+                    changed = True
+            if changed:
+                await db.commit()
+                print(f"[startup] Single-admin enforced: {len(others)} other account(s) deactivated")
     except Exception as exc:
         print(f"[startup] PostgreSQL init or admin setup skipped: {exc}")
         

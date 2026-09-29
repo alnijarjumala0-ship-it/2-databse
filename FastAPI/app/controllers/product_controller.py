@@ -12,7 +12,7 @@ from app.schemas import (
     ProductUpdate,
     MessageResponse,
 )
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_admin
 from app.controllers.log_controller import log_activity
 from app.models.sqlalchemy_models import User
 
@@ -32,9 +32,9 @@ async def list_products(db: AsyncSession = Depends(get_db)):
 async def create_product(
     product_data: ProductCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_admin),
 ):
-    """Create a new product (Authenticated users)."""
+    """Create a new product (Admin only)."""
     new_product = Product(
         name=product_data.name,
         description=product_data.description,
@@ -78,9 +78,9 @@ async def update_product(
     product_id: int,
     product_data: ProductUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_admin),
 ):
-    """Update a product (Authenticated users)."""
+    """Update a product (Admin only)."""
     result = await db.execute(select(Product).where(Product.id == product_id))
     product = result.scalar_one_or_none()
     if not product:
@@ -110,9 +110,9 @@ async def update_product(
 async def delete_product(
     product_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_admin),
 ):
-    """Delete a product (Authenticated users)."""
+    """Delete a product (Admin only)."""
     result = await db.execute(select(Product).where(Product.id == product_id))
     product = result.scalar_one_or_none()
     if not product:

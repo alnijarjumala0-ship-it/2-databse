@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from app.core.database import get_db
 from app.core.security import verify_token
+from app.core.settings import settings
 from app.models.sqlalchemy_models import User
 
 
@@ -44,10 +45,15 @@ async def get_current_user(
 
 
 async def get_current_admin(current_user: User = Depends(get_current_user)):
-    """Get the current user and verify admin privileges."""
+    """Get the current user and verify single-admin privileges."""
     if not current_user.is_admin:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required",
+        )
+    if current_user.email.lower() != settings.admin_email.lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access only",
         )
     return current_user

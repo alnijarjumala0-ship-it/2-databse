@@ -23,85 +23,29 @@ from app.schemas import (
     ChangePassword,
 )
 from app.core.dependencies import get_current_user, get_current_admin
+from app.core.settings import settings
 
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserRegister, db=Depends(get_db)):
-    """Register a new user and return tokens."""
-    from sqlalchemy import select
-    existing_user = await db.execute(select(User).where(User.email == user_data.email))
-    if existing_user.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    existing_username = await db.execute(select(User).where(User.username == user_data.username))
-    if existing_username.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Username already taken")
-
-    new_user = User(
-        email=user_data.email,
-        username=user_data.username,
-        hashed_password=get_password_hash(user_data.password),
-        full_name=user_data.full_name,
-        is_active=True,
-        is_admin=False,
-    )
-    db.add(new_user)
-    await db.flush()
-    await db.refresh(new_user)
-
-    access_token = create_access_token({"sub": str(new_user.id), "email": new_user.email})
-    refresh_token = create_refresh_token({"sub": str(new_user.id), "email": new_user.email})
-
-    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
+# Registration disabled: single-admin system only.
+# These endpoints are kept so old clients get a clear error instead of 404.
+@router.post("/register", status_code=status.HTTP_403_FORBIDDEN)
+async def register_disabled():
+    """Public registration is disabled - admin only system."""
+    raise HTTPException(status_code=403, detail="Registration is disabled. Admin access only.")
 
 
-@router.post("/register-admin", response_model=Token, status_code=status.HTTP_201_CREATED)
-async def register_admin(user_data: UserRegister, db=Depends(get_db)):
-    """Register a new admin user and return tokens."""
-    from sqlalchemy import select
-    existing_user = await db.execute(select(User).where(User.email == user_data.email))
-    if existing_user.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    existing_username = await db.execute(select(User).where(User.username == user_data.username))
-    if existing_username.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Username already taken")
-
-    new_user = User(
-        email=user_data.email,
-        username=user_data.username,
-        hashed_password=get_password_hash(user_data.password),
-        full_name=user_data.full_name,
-        is_active=True,
-        is_admin=True,
-    )
-    db.add(new_user)
-    await db.flush()
-    await db.refresh(new_user)
-
-    access_token = create_access_token({"sub": str(new_user.id), "email": new_user.email})
-    refresh_token = create_refresh_token({"sub": str(new_user.id), "email": new_user.email})
-
-    from app.controllers.log_controller import log_activity
-    await log_activity(
-        db=db,
-        action="register_admin",
-        resource="/auth/register-admin",
-        method="POST",
-        status_code=201,
-        user_id=new_user.id,
-        user_email=new_user.email,
-    )
-
-    return Token(access_token=access_token, refresh_token=refresh_token, token_type="bearer")
+@router.post("/register-admin", status_code=status.HTTP_403_FORBIDDEN)
+async def register_admin_disabled():
+    """Admin registration is disabled - single admin only."""
+    raise HTTPException(status_code=403, detail="Registration is disabled. Single admin only.")
 
 
 @router.post("/login", response_model=Token)
 async def login(user_data: UserLogin, request: Request, db=Depends(get_db)):
-    """Authenticate user and return tokens."""
+    """Authenticate the single admin only."""
     from sqlalchemy import select
     result = await db.execute(select(User).where(User.email == user_data.email))
     user = result.scalar_one_or_none()
@@ -111,6 +55,10 @@ async def login(user_data: UserLogin, request: Request, db=Depends(get_db)):
 
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account is disabled")
+
+    # Single-admin enforcement: only the configured admin email with admin flag.
+    if not user.is_admin or user.email.lower() != settings.admin_email.lower():
+        raise HTTPException(status_code=403, detail="Admin access only")
 
     access_token = create_access_token({"sub": str(user.id), "email": user.email})
     refresh_token = create_refresh_token({"sub": str(user.id), "email": user.email})
